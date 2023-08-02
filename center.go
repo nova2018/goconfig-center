@@ -16,13 +16,16 @@ type center struct {
 	configKey  string
 }
 
-func New(config *goconfig.Config, key string) *center {
+func New(config *goconfig.Config, key ...string) *center {
+	if len(key) == 0 {
+		key = []string{KeyConfig}
+	}
 	return &center{
 		config:     config,
 		listOrigin: make([]*viper.Viper, 0),
 		listDriver: make([]driver, 0),
 		lock:       &sync.Mutex{},
-		configKey:  key,
+		configKey:  key[0],
 	}
 }
 
@@ -35,7 +38,7 @@ func (c *center) Watch() {
 	})
 	err := c.reload()
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		fmt.Printf("%+v\n", err)
 	}
 }
 
@@ -54,7 +57,9 @@ func (c *center) reload() error {
 		cfg.Drivers = []ConfigDriver{}
 	}
 
+	// 新的driver列表
 	newDriver := make([]driver, 0, len(cfg.Drivers))
+	// 新生成，还未启动监听
 	unWatch := make([]driver, 0, len(cfg.Drivers))
 	mapHit := make(map[int]bool)
 	for i, dc := range cfg.Drivers {
@@ -91,14 +96,18 @@ func (c *center) reload() error {
 	}
 	// 启动监听
 	for _, dr := range unWatch {
-		dr.Watch()
+		if !dr.Watch() {
+			return fmt.Errorf("config watch failure! [%s]", dr.Name())
+		}
 	}
 	// 不再监听
 	for i, dr := range c.listDriver {
 		if mapHit[i] {
 			continue
 		}
-		dr.Unwatch()
+		if !dr.Unwatch() {
+			return fmt.Errorf("config unwatch failure! [%s]", dr.Name())
+		}
 	}
 	c.listDriver = newDriver
 	return nil
