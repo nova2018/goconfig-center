@@ -5,7 +5,7 @@ const (
 )
 
 type config struct {
-	Enable  bool           `mapstructure:"'enable'" json:"enable,omitempty"`
+	Enable  bool           `mapstructure:"enable,omitempty"`
 	Drivers []ConfigDriver `mapstructure:"drivers,omitempty"`
 }
 

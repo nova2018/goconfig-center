@@ -9,7 +9,6 @@ import (
 
 type center struct {
 	config     *goconfig.Config
-	listOrigin []*viper.Viper
 	listDriver []driverInfo
 	lock       *sync.Mutex
 	configKey  string
@@ -26,7 +25,6 @@ func New(config *goconfig.Config, key ...string) *center {
 	}
 	return &center{
 		config:     config,
-		listOrigin: make([]*viper.Viper, 0),
 		listDriver: make([]driverInfo, 0),
 		lock:       &sync.Mutex{},
 		configKey:  key[0],
@@ -71,9 +69,9 @@ func (c *center) reload() error {
 			continue
 		}
 		if !IsSupport(dc.Driver) {
-			return fmt.Errorf("Driver[%s] is not supported", dc.Driver)
+			return fmt.Errorf("driver[%s] is not supported", dc.Driver)
 		}
-		vv := v.Sub(fmt.Sprintf("drivers[%d]", i))
+		vv := v.Sub(fmt.Sprintf("drivers.%d", i))
 		if vv == nil {
 			continue
 		}
@@ -118,9 +116,4 @@ func (c *center) reload() error {
 	}
 	c.listDriver = newDriver
 	return nil
-}
-
-func (c *center) PushOrigin(v *viper.Viper) {
-	c.listOrigin = append(c.listOrigin, v)
-	c.config.AddViper(v)
 }
