@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func factory(config *goconfig.Config, drName string, cfg *viper.Viper) (driver, error) {
+func factory(config *goconfig.Config, drName string, cfg *viper.Viper) (Driver, error) {
 	if fn, ok := mapDriver[drName]; ok {
 		return fn(config, cfg)
 	}

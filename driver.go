@@ -5,7 +5,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type driver interface {
+type Driver interface {
 	Name() string
 	Viper() *viper.Viper
 	IsSame(*viper.Viper) bool
@@ -14,4 +14,4 @@ type driver interface {
 	Prefix() string
 }
 
-type DriverFactory func(config *goconfig.Config, cfg *viper.Viper) (driver, error)
+type DriverFactory func(config *goconfig.Config, cfg *viper.Viper) (Driver, error)

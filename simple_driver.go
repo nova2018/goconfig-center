@@ -46,7 +46,7 @@ type simpleConfig struct {
 	Type         string `mapstructure:"type"`
 }
 
-func simpleFactory(config *goconfig.Config, cfg *viper.Viper) (driver, error) {
+func simpleFactory(config *goconfig.Config, cfg *viper.Viper) (Driver, error) {
 	var c simpleConfig
 	if err := cfg.Unmarshal(&c); err != nil {
 		return nil, err

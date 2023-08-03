@@ -10,7 +10,7 @@ import (
 type center struct {
 	config     *goconfig.Config
 	listOrigin []*viper.Viper
-	listDriver []driver
+	listDriver []Driver
 	listCfg    []*viper.Viper
 	lock       *sync.Mutex
 	configKey  string
@@ -23,7 +23,7 @@ func New(config *goconfig.Config, key ...string) *center {
 	return &center{
 		config:     config,
 		listOrigin: make([]*viper.Viper, 0),
-		listDriver: make([]driver, 0),
+		listDriver: make([]Driver, 0),
 		lock:       &sync.Mutex{},
 		configKey:  key[0],
 	}
@@ -58,16 +58,16 @@ func (c *center) reload() error {
 	}
 
 	// 新的driver列表
-	newDriver := make([]driver, 0, len(cfg.Drivers))
+	newDriver := make([]Driver, 0, len(cfg.Drivers))
 	// 新生成，还未启动监听
-	unWatch := make([]driver, 0, len(cfg.Drivers))
+	unWatch := make([]Driver, 0, len(cfg.Drivers))
 	mapHit := make(map[int]bool)
 	for i, dc := range cfg.Drivers {
 		if !dc.Enable {
 			continue
 		}
 		if !IsSupport(dc.Driver) {
-			return fmt.Errorf("driver[%s] is not supported", dc.Driver)
+			return fmt.Errorf("Driver[%s] is not supported", dc.Driver)
 		}
 		vv := v.Sub(fmt.Sprintf("drivers[%d]", i))
 		if vv == nil {

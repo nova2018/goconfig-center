@@ -10,6 +10,6 @@ type config struct {
 }
 
 type ConfigDriver struct {
-	Driver string `mapstructure:"driver"`
+	Driver string `mapstructure:"Driver"`
 	Enable bool   `mapstructure:"enable"`
 }
