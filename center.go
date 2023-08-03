@@ -10,10 +10,14 @@ import (
 type center struct {
 	config     *goconfig.Config
 	listOrigin []*viper.Viper
-	listDriver []Driver
-	listCfg    []*viper.Viper
+	listDriver []driverInfo
 	lock       *sync.Mutex
 	configKey  string
+}
+
+type driverInfo struct {
+	driver Driver
+	cfg    *viper.Viper
 }
 
 func New(config *goconfig.Config, key ...string) *center {
@@ -23,7 +27,7 @@ func New(config *goconfig.Config, key ...string) *center {
 	return &center{
 		config:     config,
 		listOrigin: make([]*viper.Viper, 0),
-		listDriver: make([]Driver, 0),
+		listDriver: make([]driverInfo, 0),
 		lock:       &sync.Mutex{},
 		configKey:  key[0],
 	}
@@ -58,7 +62,7 @@ func (c *center) reload() error {
 	}
 
 	// 新的driver列表
-	newDriver := make([]Driver, 0, len(cfg.Drivers))
+	newDriver := make([]driverInfo, 0, len(cfg.Drivers))
 	// 新生成，还未启动监听
 	unWatch := make([]Driver, 0, len(cfg.Drivers))
 	mapHit := make(map[int]bool)
@@ -78,7 +82,7 @@ func (c *center) reload() error {
 			if mapHit[j] {
 				continue
 			}
-			if x.IsSame(vv) {
+			if goconfig.Equal(vv, x.cfg) {
 				mapHit[j] = true
 				newDriver = append(newDriver, x)
 				isHit = true
@@ -90,7 +94,10 @@ func (c *center) reload() error {
 			if err != nil {
 				return err
 			}
-			newDriver = append(newDriver, dr)
+			newDriver = append(newDriver, driverInfo{
+				driver: dr,
+				cfg:    vv,
+			})
 			unWatch = append(unWatch, dr)
 		}
 	}
@@ -105,8 +112,8 @@ func (c *center) reload() error {
 		if mapHit[i] {
 			continue
 		}
-		if !dr.Unwatch() {
-			return fmt.Errorf("config unwatch failure! [%s]", dr.Name())
+		if !dr.driver.Unwatch() {
+			return fmt.Errorf("config unwatch failure! [%s]", dr.driver.Name())
 		}
 	}
 	c.listDriver = newDriver

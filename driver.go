@@ -7,11 +7,8 @@ import (
 
 type Driver interface {
 	Name() string
-	Viper() *viper.Viper
-	IsSame(*viper.Viper) bool
 	Watch() bool
 	Unwatch() bool
-	Prefix() string
 }
 
 type DriverFactory func(config *goconfig.Config, cfg *viper.Viper) (Driver, error)

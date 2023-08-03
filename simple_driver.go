@@ -34,6 +34,7 @@ func (e *simpleDriver) Unwatch() bool {
 func (e *simpleDriver) Prefix() string {
 	return e.prefix
 }
+
 func (e *simpleDriver) IsSame(v *viper.Viper) bool {
 	return goconfig.Equal(e.cfg, v)
 }
