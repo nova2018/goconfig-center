@@ -1,13 +1,12 @@
 package goconfig_center
 
 import (
-	"github.com/nova2018/goconfig"
 	"github.com/spf13/viper"
 )
 
-func factory(config *goconfig.Config, drName string, cfg *viper.Viper) (Driver, error) {
+func factory(drName string, cfg *viper.Viper) (Driver, error) {
 	if fn, ok := mapDriver[drName]; ok {
-		return fn(config, cfg)
+		return fn(cfg)
 	}
 	return nil, ErrDriverNotFound
 }

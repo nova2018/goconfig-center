@@ -7,11 +7,16 @@ import (
 	"sync"
 )
 
-type center struct {
+type Center struct {
 	config     *goconfig.Config
-	listDriver []driverInfo
+	lastViper  *viper.Viper
+	listWatch  []*configWatch
 	lock       *sync.Mutex
+	fLock      *sync.Mutex // lock for flush
+	wLock      *sync.Mutex // lock for watch
 	configKey  string
+	isWatch    bool
+	listOrigin []*viper.Viper
 }
 
 type driverInfo struct {
@@ -19,19 +24,51 @@ type driverInfo struct {
 	cfg    *viper.Viper
 }
 
-func New(config *goconfig.Config, key ...string) *center {
+func New(config *goconfig.Config, key ...string) *Center {
 	if len(key) == 0 {
 		key = []string{KeyConfig}
 	}
-	return &center{
-		config:     config,
-		listDriver: make([]driverInfo, 0),
-		lock:       &sync.Mutex{},
-		configKey:  key[0],
+	return &Center{
+		config:    config,
+		listWatch: make([]*configWatch, 0),
+		lock:      &sync.Mutex{},
+		wLock:     &sync.Mutex{},
+		fLock:     &sync.Mutex{},
+		configKey: key[0],
 	}
 }
 
-func (c *center) Watch() {
+func NewWithViper(v *viper.Viper, key ...string) *Center {
+	gConfig := goconfig.New()
+	newCenter := New(gConfig, key...)
+	newCenter.AttachViper(v)
+	return newCenter
+}
+
+func (c *Center) AttachViper(v *viper.Viper) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if c.listOrigin == nil {
+		c.listOrigin = make([]*viper.Viper, 0, 1)
+	}
+	c.listOrigin = append(c.listOrigin, v)
+	flushConfig(c)
+}
+
+func (c *Center) DetachViper(v *viper.Viper) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	listNew := make([]*viper.Viper, 0, len(c.listOrigin))
+	for _, x := range c.listOrigin {
+		if v != x && v != nil {
+			listNew = append(listNew, x)
+		}
+	}
+	c.listOrigin = listNew
+	flushConfig(c)
+}
+
+func (c *Center) Watch() {
 	c.config.OnKeyChange(c.configKey, func() {
 		err := c.reload()
 		if err != nil {
@@ -42,9 +79,21 @@ func (c *center) Watch() {
 	if err != nil {
 		fmt.Printf("%+v\n", err)
 	}
+	c.isWatch = true
 }
 
-func (c *center) reload() error {
+func (c *Center) StopWatch() {
+	c.isWatch = false
+	for _, x := range c.listWatch {
+		unWatch(x)
+	}
+}
+
+func (c *Center) GetConfig() *goconfig.Config {
+	return c.config
+}
+
+func (c *Center) reload() error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	var cfg config
@@ -60,9 +109,9 @@ func (c *center) reload() error {
 	}
 
 	// 新的driver列表
-	newDriver := make([]driverInfo, 0, len(cfg.Drivers))
+	newDriver := make([]*configWatch, 0, len(cfg.Drivers))
 	// 新生成，还未启动监听
-	unWatch := make([]Driver, 0, len(cfg.Drivers))
+	listUnWatch := make([]*configWatch, 0, len(cfg.Drivers))
 	mapHit := make(map[int]bool)
 	for i, dc := range cfg.Drivers {
 		if !dc.Enable {
@@ -76,11 +125,11 @@ func (c *center) reload() error {
 			continue
 		}
 		isHit := false
-		for j, x := range c.listDriver {
+		for j, x := range c.listWatch {
 			if mapHit[j] {
 				continue
 			}
-			if goconfig.Equal(vv, x.cfg) {
+			if Equal(vv, x.driver.cfg) {
 				mapHit[j] = true
 				newDriver = append(newDriver, x)
 				isHit = true
@@ -88,32 +137,30 @@ func (c *center) reload() error {
 			}
 		}
 		if !isHit {
-			dr, err := factory(c.config, dc.Driver, vv)
+			dr, err := factory(dc.Driver, vv)
 			if err != nil {
 				return err
 			}
-			newDriver = append(newDriver, driverInfo{
+			di := newWatch(c, driverInfo{
 				driver: dr,
 				cfg:    vv,
 			})
-			unWatch = append(unWatch, dr)
+			newDriver = append(newDriver, di)
+			listUnWatch = append(listUnWatch, di)
 		}
 	}
 	// 启动监听
-	for _, dr := range unWatch {
-		if !dr.Watch() {
-			return fmt.Errorf("config watch failure! [%s]", dr.Name())
-		}
+	for _, dr := range listUnWatch {
+		watch(dr)
 	}
 	// 不再监听
-	for i, dr := range c.listDriver {
+	for i, dr := range c.listWatch {
 		if mapHit[i] {
 			continue
 		}
-		if !dr.driver.Unwatch() {
-			return fmt.Errorf("config unwatch failure! [%s]", dr.driver.Name())
-		}
+		unWatch(dr)
 	}
-	c.listDriver = newDriver
+	c.listWatch = newDriver
+	flushConfig(c)
 	return nil
 }

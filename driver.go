@@ -1,14 +1,15 @@
 package goconfig_center
 
 import (
-	"github.com/nova2018/goconfig"
 	"github.com/spf13/viper"
 )
 
 type Driver interface {
 	Name() string
-	Watch() bool
-	Unwatch() bool
+	GetViper() (*viper.Viper, error)
+	OnUpdate() <-chan struct{}
+	Close() error
+	Prefix() string
 }
 
-type DriverFactory func(config *goconfig.Config, cfg *viper.Viper) (Driver, error)
+type DriverFactory func(cfg *viper.Viper) (Driver, error)
