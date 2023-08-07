@@ -19,7 +19,6 @@ type fileDriver struct {
 	close    bool
 	onUpdate chan struct{}
 	lock     *sync.Mutex
-	once     *sync.Once
 }
 
 func (r *fileDriver) Name() string {
@@ -87,7 +86,6 @@ func fileFactory(cfg *viper.Viper) (Driver, error) {
 		cfg:   &c,
 		viper: v,
 		lock:  &sync.Mutex{},
-		once:  &sync.Once{},
 	}, nil
 }
 

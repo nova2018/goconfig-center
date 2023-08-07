@@ -21,7 +21,6 @@ type remoteDriver struct {
 	close    bool
 	onUpdate chan struct{}
 	lock     *sync.Mutex
-	once     *sync.Once
 }
 
 func (r *remoteDriver) Name() string {
@@ -101,7 +100,6 @@ func remoteFactory(cfg *viper.Viper) (Driver, error) {
 		cfg:   &c,
 		viper: v,
 		lock:  &sync.Mutex{},
-		once:  &sync.Once{},
 	}, nil
 }
 
