@@ -41,11 +41,11 @@ func New(config *goconfig.Config, key ...string) *Center {
 func NewWithViper(v *viper.Viper, key ...string) *Center {
 	gConfig := goconfig.New()
 	newCenter := New(gConfig, key...)
-	newCenter.AttachViper(v)
+	newCenter.Attach(v)
 	return newCenter
 }
 
-func (c *Center) AttachViper(v *viper.Viper) {
+func (c *Center) Attach(v *viper.Viper) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.listOrigin == nil {
@@ -55,7 +55,7 @@ func (c *Center) AttachViper(v *viper.Viper) {
 	flushConfig(c)
 }
 
-func (c *Center) DetachViper(v *viper.Viper) {
+func (c *Center) Detach(v *viper.Viper) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	listNew := make([]*viper.Viper, 0, len(c.listOrigin))

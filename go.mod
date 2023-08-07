@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/fsnotify/fsnotify v1.6.0
-	github.com/nova2018/goconfig v1.0.1
+	github.com/nova2018/goconfig v1.0.2
 	github.com/spf13/viper v1.15.0
 	gopkg.in/yaml.v3 v3.0.1
 )
