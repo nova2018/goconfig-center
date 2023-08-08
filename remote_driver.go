@@ -40,10 +40,10 @@ func (r *remoteDriver) OnUpdate() <-chan struct{} {
 	if r.onUpdate == nil {
 		r.onUpdate = make(chan struct{})
 		go func() {
-			ticker := time.Tick(time.Second)
+			ticker := time.NewTicker(time.Second)
 			for !r.close {
 				select {
-				case <-ticker:
+				case <-ticker.C:
 					if r.viper == nil {
 						break
 					}
@@ -59,6 +59,7 @@ func (r *remoteDriver) OnUpdate() <-chan struct{} {
 					r.lock.Unlock()
 				}
 			}
+			ticker.Stop()
 		}()
 	}
 	return r.onUpdate
