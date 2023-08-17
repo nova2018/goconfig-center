@@ -135,8 +135,8 @@ github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0V
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
-github.com/nova2018/goconfig v1.0.2 h1:ZxPGLDdlUAvw2mC12g/QnRKrfdava3eYqaKJZ++iuoI=
-github.com/nova2018/goconfig v1.0.2/go.mod h1:GzCd+4f1P7hIZUqjlQxdwKklgjnLX0ZVwJuAAvSbp30=
+github.com/nova2018/goconfig v1.0.3-0.20230817025340-032f1d0d9039 h1:nwEk01dKqh/FuaxpyEFnwUSs/p6UcsUi+8c8943+j0o=
+github.com/nova2018/goconfig v1.0.3-0.20230817025340-032f1d0d9039/go.mod h1:PzFg9IcauEzcoVXQRN0QqCpoxaIpUh00v4PVb74q4iU=
 github.com/pelletier/go-toml/v2 v2.0.6 h1:nrzqCb7j9cDFj2coyLNLaZuJTLjWjlaz6nvTvIwycIU=
 github.com/pelletier/go-toml/v2 v2.0.6/go.mod h1:eumQOmlWiOPt5WriQQqoM5y18pDHwha2N+QD+EUNTek=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

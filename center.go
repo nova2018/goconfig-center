@@ -69,7 +69,7 @@ func (c *Center) Detach(v *viper.Viper) {
 }
 
 func (c *Center) Watch() {
-	c.config.OnKeyChange(c.configKey, func() {
+	c.config.OnKeyUpdate(c.configKey, func() {
 		err := c.reload()
 		if err != nil {
 			print(err)
